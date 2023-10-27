@@ -373,12 +373,9 @@ def main():
     # except that it should be way more visceral
 
     GAME_RUN = True
-    room = configure_map()
-    player = Player(room)
-    del(room)
-    assert player.room,"PLAYER.room cannot be 'None' at this point"
-    VALID_CMDS = set({"go", "get", "exit", "quit"})
 
+    game_map = Map(MAPDATA)
+    player = Player(game_map.get_room("Your Room"))
 
     while GAME_RUN:
         player.room.display()
