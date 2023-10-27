@@ -278,20 +278,37 @@ class Stairwell(Room):
 
 
 class Map:
-
+    """An object that loads the game from a YAML document
+    """
     def __init__(self, mapdata):
         # construct the map
+        self._items = [Item.from_dict(**v) for v in mapdata["items"]]
+        breakpoint()
         self._room_dict = {}
         for k, v in mapdata:
             self._room_dict.update({k: v})
             Room(**v)
 
 
+    def get_item(self, s: str) -> Item:
+        """Return a :class:Item
+        Args:
+            s: The name of the item
+        Raises:
+            NoSuchItemError
+        """
+        for i in self._items:
+            if i.name == s:
+                return i
+        raise NoSuchItemError(i)
+
 
     def get_room(self, s: str) -> Room:
-        """Return a :class:Room or raise an exception
+        """Return a :class:Room
         Args:
             s: The name of the room
+        Raises:
+            NoSuchRoomError
         """
         for r in self.room_list:
             if r.name == s:
@@ -317,7 +334,17 @@ class Player:
                 # or 'go west' -> Room raises 'cannot go west'
                 # This almost invalidates the existence of the map
                 # as the rooms are effectively a node graph with edges to each other
-                self.room = self.room.move(c.direction)
+                try:
+                    self.room = self.room.move(c.direction)
+                except LockedRoomError as e:
+                    e.display()
+                    try:
+                        self.room = self.room.move_with_key(inventory, c.direction)
+                        print(f"You unlock the room with theenter the room with the {} key")
+                    except LockedRoomError as e:
+                        e.display()
+
+
             except InvalidDirectionError as e:
                 raise
 
@@ -334,14 +361,6 @@ class Player:
 
     def display_inventory(self):
         print(f"Inventory: {self.inventory}")
-
-
-
-
-def configure_map() -> Room:
-    """Generates map and returns a pointer to the starting room
-    """
-    return Room(name="Great Hall")
 
 
 def main():
