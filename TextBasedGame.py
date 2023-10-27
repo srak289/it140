@@ -174,10 +174,14 @@ class TextBasedGameError(Exception):
         print(f"\nE: {s}\n")
 
 
-class CannotGetItemError(TextBasedGameError): pass
 class InvalidCommandError(TextBasedGameError): pass
 class InvalidDirectionError(TextBasedGameError): pass
+class LockedRoomError(TextBasedGameError): pass
+class NoRoomAdjacentError(TextBasedGameError): pass
+class CannotGetItemError(TextBasedGameError): pass
 class QuitGameError(TextBasedGameError): pass
+class NoSuchRoomError(TextBasedGameError): pass
+class NoSuchItemError(TextBasedGameError): pass
 
 
 @dataclasses.dataclass
@@ -396,14 +400,14 @@ def main():
         try:
             cmd = Command.parse(input("Enter your command:\n"))
         except InvalidCommandError as e:
-            print(e)
+            e.display()
             continue
         try:
             player.command(cmd)
         except InvalidDirectionError as e:
-            print(e)
+            e.display()
         except CannotGetItemError as e:
-            print(e)
+            e.display()
         except QuitGameError as e:
             GAME_RUN = False
             print("Thanks for playing!")
