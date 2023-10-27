@@ -170,11 +170,12 @@ rooms:
 class TextBasedGameError(Exception):
 
     def __init__(self, msg):
+        self.msg = msg
         super().__init__(msg)
 
 
     def display(self):
-        print(f"\nE: {s}\n")
+        print(f"\nE: {self.msg}\n")
 
 
 class InvalidCommandError(TextBasedGameError): pass
@@ -215,7 +216,6 @@ class Command:
 
     def __init__(self, cmd: str, **kwargs):
         self.cmd = cmd
-
         # add additional attributes provided in kwargs
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -273,8 +273,10 @@ class Room(Base):
         try:
             if self.locked:
                 raise LockedRoomError(self)
-            return self._connections[direction]
-        except KeyError as e:
+            # TODO: we should standardize on titlecase ?
+            # perhaps edit that in Map
+            return getattr(self, direction.lower())
+        except AttributeError as e:
             raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
 
 
@@ -359,6 +361,8 @@ class Player:
                 # as the rooms are effectively a node graph with edges to each other
                 try:
                     self.room = self.room.move(c.direction)
+                except NoRoomAdjacentError as e:
+                    e.display()
                 except LockedRoomError as e:
                     e.display()
                     try:
@@ -379,7 +383,7 @@ class Player:
                 raise
 
         elif c.cmd == "quit":
-            raise QuitGameError()
+            raise QuitGameError("QUIT")
 
 
     def display_inventory(self):
