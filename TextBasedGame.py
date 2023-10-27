@@ -148,6 +148,7 @@ rooms:
       north: Basement
       south: Garage
     text: the basement stairwell
+    stairwell: True
 
   - name: Stairwell First Floor
     connections:
@@ -155,12 +156,14 @@ rooms:
       down: Stairwell Basement
       west: Downstairs Hallway
     text: the first floor stairwell
+    stairwell: True
 
   - name: Stairwell Second Floor
     connections:
       down: Stairwell First Floor
       west: Upstairs Hallway
     text: the second floor stairwell
+    stairwell: True
 """)
 
 
@@ -236,16 +239,19 @@ class Command:
 
 @dataclasses.dataclass
 class Room(Base):
-    """A basic object for representing a room in the game
+    """An object for representing a room in the game
     """
     connections: typing.Dict[str, 'Room']
     items: typing.List[Item] = dataclasses.field(default_factory = lambda: list())
     start: bool = False
     locked: bool = False
     villian: bool = False
+    stairwell: bool = False
 
     def __post_init__(self):
         self._valid_directions = set({"North", "East", "South", "West"})
+        if self.stairwell:
+            self._valid_directions |= {"Up", "Down"}
 
 
     def _add_item(self, item: Item):
