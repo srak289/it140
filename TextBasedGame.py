@@ -246,10 +246,18 @@ class Room(Base):
         _connections = {}
         self._valid_directions = set({"North", "East", "South", "West"})
 
-    def _add_adjacent_room(self, room):
-        # if room.coupling in self._adjc
-        # self._adjacent_rooms
-        pass
+
+    def _add_item(self, item: Item):
+        """Add an item to the room
+        """
+        self._items.append(item)
+
+
+    def _add_adjacent_room(self, direction: str, room: Room):
+        """Create a unidirectional edge between this room and another
+        """
+        assert direction in self._valid_directions,f"{direction} is invalid"
+        self._connections[direction] = room
 
 
     def move(self, direction):
