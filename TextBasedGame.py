@@ -194,7 +194,9 @@ class Item:
 
 
 class Command:
-    _valid_cmd = set({"go", "get", "exit", "quit"})
+    """An object for representing valid commands
+    """
+    _valid_cmd = set({"go", "get", "quit"})
 
     def __init__(self, cmd: str, **kwargs):
         self.cmd = cmd
@@ -210,9 +212,9 @@ class Command:
         if raw_cmd[0] not in cls._valid_cmd:
             raise InvalidCommandError(f"{raw_cmd} is not one of {cls._valid_cmd}")
         elif raw_cmd[0] == "go":
-            return cls(raw_cmd[0], direction=raw_cmd[1])
+            return cls(raw_cmd[0], direction=raw_cmd[1].title())
         elif raw_cmd[0] == "get":
-            return cls(raw_cmd[0], item=raw_cmd[1])
+            return cls(raw_cmd[0], item=raw_cmd[1].title())
         elif raw_cmd[0] == "exit":
             return cls(raw_cmd[0])
         elif raw_cmd[0] == "quit":
@@ -320,18 +322,8 @@ class Player:
             except CannotGetItemError as e:
                 raise
 
-        elif c.cmd == "exit":
-            self.room = self.map.get_room("Stairwell First Floor")
-            # perhaps this loop wants to exist in the game run loop
-            while cmd := input("You can type 'go outside' to leave the game\nor 'go inside' to reenter the house\n").lower():
-                if cmd not in ("go outside", "go inside"):
-                    raise InvalidCommandError(f"{cmd} is not one of 'go outside' or 'go inside'")
-                    continue
-                if cmd == "go outside":
-                    break
-                elif cmd == "go inside":
-                    break
-                assert False,"Error in player exit command loop"
+        elif c.cmd == "quit":
+            raise QuitGameError()
 
 
     def display_inventory(self):
