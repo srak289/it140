@@ -238,12 +238,13 @@ class Command:
 class Room(Base):
     """A basic object for representing a room in the game
     """
+    connections: typing.Dict[str, 'Room']
+    items: typing.List[Item] = dataclasses.field(default_factory = lambda: list())
+    start: bool = False
     locked: bool = False
     villian: bool = False
 
     def __post_init__(self):
-        _items = []
-        _connections = {}
         self._valid_directions = set({"North", "East", "South", "West"})
 
 
@@ -253,7 +254,7 @@ class Room(Base):
         self._items.append(item)
 
 
-    def _add_adjacent_room(self, direction: str, room: Room):
+    def _add_adjacent_room(self, direction: str, room: 'Room'):
         """Create a unidirectional edge between this room and another
         """
         assert direction in self._valid_directions,f"{direction} is invalid"
@@ -261,16 +262,22 @@ class Room(Base):
 
 
     def move(self, direction):
-        if self.locked:
-            raise LockedRoomError(self)
-
         if direction not in self._valid_directions:
             raise InvalidDirectionError(f"{direction} is not one of {self._valid_directions}")
         try:
-            # how do we represent a locked room??
+            if self.locked:
+                raise LockedRoomError(self)
             return self._connections[direction]
         except KeyError as e:
             raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
+
+
+    def move_with_key(self, inventory,  direction):
+        for i in inventory:
+            if i.name == f"{self.name.lower()}_key":
+                self.locked = False
+        # let this raise
+        return self.move(direction)
 
 
     def lookaround(self):
@@ -357,7 +364,7 @@ class Player:
                     e.display()
                     try:
                         self.room = self.room.move_with_key(inventory, c.direction)
-                        print(f"You unlock the room with theenter the room with the {} key")
+                        print(f"You unlock the room with theenter the room with the  key")
                     except LockedRoomError as e:
                         e.display()
 
