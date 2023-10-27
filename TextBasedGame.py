@@ -236,16 +236,13 @@ class Room:
 
 
     def move(self, direction):
-        print(f"Moving {direction}")
-
-
-    def _direction(self, direction):
-        # try:
-        #     return sel
-        # if direction not in self.adjacent:
-        #     raise KeyError("No direction")
-        # return self.adjecan
-        pass
+        if direction not in self._valid_directions:
+            raise InvalidDirectionError(f"{direction} is not one of {self._valid_directions}")
+        try:
+            # how do we represent a locked room??
+            return self._connections[direction]
+        except KeyError as e:
+            raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
 
 
     def lookaround(self):
@@ -257,36 +254,9 @@ class Room:
         pass
 
 
-    def locked(self):
-        # this could decorate a property
-        # or we could declare a direction as locked
-        # we should probably mark ourselves as locked and inform the peer
-        pass
-
-    
     def display(self):
         print(f"You are in the {self.name}")
 
-    # @property
-    # def north(self):
-    #     return self.get_direction("north")
-
-
-    # @east.setter
-    # def east(self, room):
-    #     if self._east:
-    #         raise RoomAlreadyS
-    #     else:
-    #         self._east = room
-
-
-    # def east(self):
-    #     return self._rooms["east"]
-    #     pass
-
-
-    # def south(self):
-    #     pass
 
 
     # def west(self):
