@@ -47,46 +47,46 @@ items:
 rooms:
   - name: Downstairs Bathroom
     connections:
-      - east: Dining Room
-      - south: Kitchen
+      east: Dining Room
+      south: Kitchen
     items:
       - Cleaning Gloves
     text: the downstairs bathroom
 
   - name: Dining Room
     connections:
-      - west: Downstairs Bathroom
-      - south: Downstairs Hallway
+      west: Downstairs Bathroom
+      south: Downstairs Hallway
     text: the dining room
 
   - name: Kitchen
     connections:
-      - north: Downstairs Bathroom
-      - east: Downstairs Hallway
+      north: Downstairs Bathroom
+      east: Downstairs Hallway
     items:
       - Trash Bags
     text: the kitchen
 
   - name: Downstairs Hallway
     connections:
-      - north: Dining Room
-      - east: Stairwell First Floor
-      - west: Kitchen
-      - south: Coatroom
+      north: Dining Room
+      east: Stairwell First Floor
+      west: Kitchen
+      south: Coatroom
     text: the downstairs hallway
 
   - name: Coatroom
     connections:
-      - north: Downstairs Hallway
-      - east: Garage
+      north: Downstairs Hallway
+      east: Garage
     items:
       - Garage Key
     text: the coatroom
 
   - name: Garage
     connections:
-      - north: Stairwell Basement
-      - west: Coatroom
+      north: Stairwell Basement
+      west: Coatroom
     items:
       - Plastic Scraper
     text: the garage
@@ -94,72 +94,72 @@ rooms:
 
   - name: Basement
     connections:
-      - south: Stairwell Basement
+      south: Stairwell Basement
     text: the basement
     locked: True
     villian: True
 
   - name: Master Bathroom
     connections:
-      - west: Parents Room
+      west: Parents Room
     items:
       - Bleach
     text: your parent's bathroom (ew)
 
   - name: Parents Room
     connections:
-      - east: Master Bathroom
-      - west: Storage Room
+      east: Master Bathroom
+      west: Storage Room
     items:
       - Basement Key
     text: your parent's room (you shouldn't stay long)
 
   - name: Storage Room
     connections:
-      - east: Parents Room
+      east: Parents Room
     items:
       - Respirator
     text: your parent's closet (are you sure you want to look here?)
 
   - name: Sisters Room
     connections:
-      - south: Upstairs Hallway
+      south: Upstairs Hallway
     items:
       - Swimming Goggles
     text: your sister's room (don't look too closely)
 
   - name: Your Room
     connections:
-      - east: Upstairs Hallway
+      east: Upstairs Hallway
     text: your room, home sweet home
     start: True
 
   - name: Upstairs Hallway
     connections:
-      - north: Sisters Room
-      - east: Stairwell Second Floor
-      - south: Parents Room
-      - west: Your Room
+      north: Sisters Room
+      east: Stairwell Second Floor
+      south: Parents Room
+      west: Your Room
     text: the upstairs hallway
 
   - name: Stairwell Basement
     connections:
-      - up: Stairwell First Floor
-      - north: Basement
-      - south: Garage
+      up: Stairwell First Floor
+      north: Basement
+      south: Garage
     text: the basement stairwell
 
   - name: Stairwell First Floor
     connections:
-      - up: Stairwell Second Floor
-      - down: Stairwell Basement
-      - west: Downstairs Hallway
+      up: Stairwell Second Floor
+      down: Stairwell Basement
+      west: Downstairs Hallway
     text: the first floor stairwell
 
   - name: Stairwell Second Floor
     connections:
-      - down: Stairwell First Floor
-      - west: Upstairs Hallway
+      down: Stairwell First Floor
+      west: Upstairs Hallway
     text: the second floor stairwell
 """)
 
@@ -290,28 +290,23 @@ class Room(Base):
 
 
     def display(self):
-        print(f"You are in the {self.name}")
-
-
-@dataclasses.dataclass
-class Stairwell(Room):
-    def __post_init__(self):
-        super().__post_init__()
-        self._valid_directions |= {"Up", "Down"}
+        print(f"You are in {self.text}")
 
 
 class Map:
-    """An object that loads the game from a YAML document
+    """An object that loads the game environment from a YAML document
     """
     def __init__(self, mapdata):
+        # construct the items
+        self._items = {v["name"]: Item.from_dict(**v) for v in mapdata["items"]}
         # construct the map
-        self._items = [Item.from_dict(**v) for v in mapdata["items"]]
         # all rooms must be initialized before connections can be made
-        self._rooms = [Room.from_dict(**v) for v in mapdata["rooms"]]
-        self._room_dict = {}
-        for k, v in mapdata:
-            self._room_dict.update({k: v})
-            Room(**v)
+        self._rooms = {v["name"]: Room.from_dict(**v) for v in mapdata["rooms"]}
+
+        # assign directional attributes for each room connection
+        for _, r in self._rooms.items():
+            for k, v in r.connections.items():
+                setattr(r, k, self.get_room(v))
 
 
     def get_item(self, s: str) -> Item:
@@ -321,9 +316,8 @@ class Map:
         Raises:
             NoSuchItemError
         """
-        for i in self._items:
-            if i.name == s:
-                return i
+        if s in self._items:
+            return self._items[s]
         raise NoSuchItemError(i)
 
 
@@ -334,9 +328,8 @@ class Map:
         Raises:
             NoSuchRoomError
         """
-        for r in self.room_list:
-            if r.name == s:
-                return r
+        if s in self._rooms:
+            return self._rooms[s]
         raise NoSuchRoomError(s)
 
 
