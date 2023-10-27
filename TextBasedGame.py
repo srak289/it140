@@ -278,11 +278,6 @@ class Room(Base):
         print(f"You are in the {self.name}")
 
 
-
-    # def west(self):
-    #     pass
-
-
 @dataclasses.dataclass
 class Stairwell(Room):
     def __post_init__(self):
