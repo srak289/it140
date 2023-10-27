@@ -10,19 +10,157 @@ import typing
 import yaml
 
 
-# unsure if we want to use yaml for this 
-# or just link the rooms by hand in :meth:configure_map
 MAPDATA = yaml.safe_load("""\
-- name: Downstairs Bathroom
-  item:
-    name: Cleaning Gloves
-    property: hands
-- name: Dining Room
-  connections:
-    - 
-  west: Downstairs Bathroom
-  south: Downstairs Hallway
-- name: Downstairs Hallway
+items:
+  - name: Cleaning Gloves
+    attr: protect_hands
+    text: heavy gloves that cover your hands
+
+  - name: Swimming Goggles
+    attr: protect_eyes
+    text: thick goggles that seal your eyes
+
+  - name: Respirator
+    attr: protect_lungs
+    text: a face-mask that can filter the air
+
+  - name: Trash Bags
+    attr: protect_torso
+    text: a thick bag that could cover your body
+
+  - name: Bleach
+    attr: destroy_mold
+    text: a toxic liquid known for removing mold
+
+  - name: Plastic Scraper
+    attr: destroy_mold
+    text: a flexible tool for scraping surfaces clean
+
+  - name: Garage Key
+    attr: unlock_garage
+    text: a key that goes to the garage door
+
+  - name: Basement Key
+    attr: unlock_basement
+    text: a key that goes to the basement door
+
+rooms:
+  - name: Downstairs Bathroom
+    connections:
+      - east: Dining Room
+      - south: Kitchen
+    items:
+      - Cleaning Gloves
+    text: the downstairs bathroom
+
+  - name: Dining Room
+    connections:
+      - west: Downstairs Bathroom
+      - south: Downstairs Hallway
+    text: the dining room
+
+  - name: Kitchen
+    connections:
+      - north: Downstairs Bathroom
+      - east: Downstairs Hallway
+    items:
+      - Trash Bags
+    text: the kitchen
+
+  - name: Downstairs Hallway
+    connections:
+      - north: Dining Room
+      - east: Stairwell First Floor
+      - west: Kitchen
+      - south: Coatroom
+    text: the downstairs hallway
+
+  - name: Coatroom
+    connections:
+      - north: Downstairs Hallway
+      - east: Garage
+    items:
+      - Garage Key
+    text: the coatroom
+
+  - name: Garage
+    connections:
+      - north: Stairwell Basement
+      - west: Coatroom
+    items:
+      - Plastic Scraper
+    text: the garage
+    locked: True
+
+  - name: Basement
+    connections:
+      - south: Stairwell Basement
+    text: the basement
+    locked: True
+    villian: True
+
+  - name: Master Bathroom
+    connections:
+      - west: Parents Room
+    items:
+      - Bleach
+    text: your parent's bathroom (ew)
+
+  - name: Parents Room
+    connections:
+      - east: Master Bathroom
+      - west: Storage Room
+    items:
+      - Basement Key
+    text: your parent's room (you shouldn't stay long)
+
+  - name: Storage Room
+    connections:
+      - east: Parents Room
+    items:
+      - Respirator
+    text: your parent's closet (are you sure you want to look here?)
+
+  - name: Sisters Room
+    connections:
+      - south: Upstairs Hallway
+    items:
+      - Swimming Goggles
+    text: your sister's room (don't look too closely)
+
+  - name: Your Room
+    connections:
+      - east: Upstairs Hallway
+    text: your room, home sweet home
+    start: True
+
+  - name: Upstairs Hallway
+    connections:
+      - north: Sisters Room
+      - east: Stairwell Second Floor
+      - south: Parents Room
+      - west: Your Room
+    text: the upstairs hallway
+
+  - name: Stairwell Basement
+    connections:
+      - up: Stairwell First Floor
+      - north: Basement
+      - south: Garage
+    text: the basement stairwell
+
+  - name: Stairwell First Floor
+    connections:
+      - up: Stairwell Second Floor
+      - down: Stairwell Basement
+      - west: Downstairs Hallway
+    text: the first floor stairwell
+
+  - name: Stairwell Second Floor
+    connections:
+      - down: Stairwell First Floor
+      - west: Upstairs Hallway
+    text: the second floor stairwell
 """)
 
 
