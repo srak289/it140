@@ -187,10 +187,16 @@ class NoSuchItemError(TextBasedGameError): pass
 @dataclasses.dataclass
 class Item:
     name: str
-    description: str
+    attr: str
+    text: str
+
+    @classmethod
+    def from_dict(cls, **kwargs):
+        return cls(**kwargs)
+
 
     def display(self):
-        print()
+        print(self.text)
 
 
 class Command:
