@@ -185,9 +185,8 @@ class NoSuchItemError(TextBasedGameError): pass
 
 
 @dataclasses.dataclass
-class Item:
+class Base:
     name: str
-    attr: str
     text: str
 
     @classmethod
@@ -197,6 +196,13 @@ class Item:
 
     def display(self):
         print(self.text)
+
+
+@dataclasses.dataclass
+class Item(Base):
+    """An object for representing item pickups
+    """
+    attr: str
 
 
 class Command:
@@ -229,13 +235,16 @@ class Command:
 
 
 @dataclasses.dataclass
-class Room:
-    name: str
-    items: typing.List[Item] = dataclasses.field(default_factory=lambda: list())
-    _adjacent_rooms: dict = dataclasses.field(default_factory=lambda: dict())
+class Room(Base):
+    """A basic object for representing a room in the game
+    """
+    locked: bool = False
+    villian: bool = False
 
     def __post_init__(self):
-        self._valid_directions = set({"Up", "Down"})
+        _items = []
+        _connections = {}
+        self._valid_directions = set({"North", "East", "South", "West"})
 
     def _add_adjacent_room(self, room):
         # if room.coupling in self._adjc
@@ -244,6 +253,9 @@ class Room:
 
 
     def move(self, direction):
+        if self.locked:
+            raise LockedRoomError(self)
+
         if direction not in self._valid_directions:
             raise InvalidDirectionError(f"{direction} is not one of {self._valid_directions}")
         try:
@@ -274,7 +286,8 @@ class Room:
 @dataclasses.dataclass
 class Stairwell(Room):
     def __post_init__(self):
-        self._valid_directions = set({"Up", "Down", "North", "South", "East", "West"})
+        super().__post_init__()
+        self._valid_directions |= {"Up", "Down"}
 
 
 class Map:
@@ -283,7 +296,8 @@ class Map:
     def __init__(self, mapdata):
         # construct the map
         self._items = [Item.from_dict(**v) for v in mapdata["items"]]
-        breakpoint()
+        # all rooms must be initialized before connections can be made
+        self._rooms = [Room.from_dict(**v) for v in mapdata["rooms"]]
         self._room_dict = {}
         for k, v in mapdata:
             self._room_dict.update({k: v})
