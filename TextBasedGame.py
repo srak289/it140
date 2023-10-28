@@ -289,7 +289,7 @@ class Room(Base):
             CannotGetItemError if the item is not in the room
         """
         if item not in self.items:
-            raise CannotGetItemError(f"There is no {item} in {self.name}")
+            raise CannotGetItemError(f"There is no {item} in {self.short_text}")
         return self.items.pop(item)
 
 
@@ -318,6 +318,16 @@ class Room(Base):
                 self.locked = False
         # let this raise
         return self.move(direction)
+
+
+    @property
+    def short_text(self):
+        if "(" in self.text:
+            # assumes there is a <space> before the '('
+            return self.text[:self.text.index("(")-1]
+        elif "," in self.text:
+            # assumes there is no <space> before the ','
+            return self.text[:self.text.index(",")]
 
 
     def display(self):
