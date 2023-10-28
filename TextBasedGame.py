@@ -196,7 +196,7 @@ class Base:
         return cls(**kwargs)
 
 
-    def display(self):
+    def display(self) -> None:
         print(self.text)
 
 
@@ -211,7 +211,7 @@ class Item(Base):
 class Command:
     """An object for representing valid commands
     """
-    _valid_cmd = set({"go", "get", "quit"})
+    _valid_cmd = set({"inspect", "go", "get", "quit"})
 
     def __init__(self, cmd: str, **kwargs):
         self.cmd = cmd
@@ -325,17 +325,27 @@ class Room(Base):
         return self.move(direction)
 
 
-    def lookaround(self):
+    def inspect(self):
         """Print directional information for the player
         'you are in <a room> and you see <attribute of room>'
         e.g. 'You see the X room to the <direction>' or
         'You see a <item> on the floor.
         """
-        pass
+        s = f"You are in {self.text}.\n"
+        # s += self.text if "(" not in self.text else self.text[:self.text.index("(")-1]
+        s += f"You see {len(self.connections)} "
+        s += "doorway.\n" if len(self.connections) == 1 else "doorways.\n"
 
-
-    def display(self):
-        print(f"You are in {self.text}")
+        if len(self.items) > 0:
+            for k, v in self.items.items():
+                if v.name.endswith("key"):
+                    pname = f"the {v.name}"
+                elif v.name.endswith("s"):
+                    pname = v.name
+                else:
+                    pname = f"a {v.name}"
+                s += f"You see {pname}: {v.text}.\n"
+        print(s)
 
 
 class Map:
@@ -409,6 +419,7 @@ class Player:
                 except LockedRoomError as e:
                     e.display()
                     try:
+                        # TODO Still have to look at lock mechanism
                         self.room = self.room.move_with_key(inventory, c.direction)
                         print(f"You unlock the room with theenter the room with the  key")
                     except LockedRoomError as e:
@@ -457,7 +468,7 @@ def main():
 
     while GAME_RUN:
         print("-"*30)
-        player.room.display()
+        player.room.inspect()
         player.display_inventory()
 
         try:
