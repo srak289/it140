@@ -286,8 +286,6 @@ class Room(Base):
         try:
             if self.locked:
                 raise LockedRoomError(self)
-            # TODO: we should standardize on titlecase ?
-            # perhaps edit that in Map
             return getattr(self, direction)
         except AttributeError as e:
             raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
@@ -323,6 +321,12 @@ class Map:
         # construct the map
         # all rooms must be initialized before connections can be made
         self._rooms = {v["name"]: Room.from_dict(**v) for v in mapdata["rooms"]}
+
+        # add the items to their respective rooms
+        for _, i in self._items.items():
+            self._rooms[i.room].items = dict()
+            self._rooms[i.room]._add_item(i)
+
 
         # assign directional attributes for each room connection
         for _, r in self._rooms.items():
