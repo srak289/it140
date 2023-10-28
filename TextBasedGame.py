@@ -220,9 +220,9 @@ class Command:
         if raw_cmd[0] not in cls._valid_cmd:
             raise InvalidCommandError(f"{raw_cmd} is not one of {cls._valid_cmd}")
         elif raw_cmd[0] == "go":
-            return cls(raw_cmd[0], direction=raw_cmd[1].title())
+            return cls(raw_cmd[0], direction=raw_cmd[1])
         elif raw_cmd[0] == "get":
-            return cls(raw_cmd[0], item=raw_cmd[1].title())
+            return cls(raw_cmd[0], item=" ".join(raw_cmd[1:]))
         elif raw_cmd[0] == "exit":
             return cls(raw_cmd[0])
         elif raw_cmd[0] == "quit":
@@ -242,9 +242,9 @@ class Room(Base):
     stairwell: bool = False
 
     def __post_init__(self):
-        self._valid_directions = set({"North", "East", "South", "West"})
+        self._valid_directions = set({"north", "east", "south", "west"})
         if self.stairwell:
-            self._valid_directions |= {"Up", "Down"}
+            self._valid_directions |= {"up", "down"}
 
 
     def _add_item(self, item: Item):
@@ -287,14 +287,14 @@ class Room(Base):
                 raise LockedRoomError(self)
             # TODO: we should standardize on titlecase ?
             # perhaps edit that in Map
-            return getattr(self, direction.lower())
+            return getattr(self, direction)
         except AttributeError as e:
             raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
 
 
     def move_with_key(self, inventory,  direction):
         for i in inventory:
-            if i.name == f"{self.name.lower()}_key":
+            if i.name == f"{self.name}_key":
                 self.locked = False
         # let this raise
         return self.move(direction)
