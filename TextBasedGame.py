@@ -12,156 +12,156 @@ import yaml
 
 MAPDATA = yaml.safe_load("""\
 items:
-  - name: Cleaning Gloves
+  - name: cleaning gloves
     attr: protect_hands
     text: heavy gloves that cover your hands
 
-  - name: Swimming Goggles
+  - name: swimming goggles
     attr: protect_eyes
     text: thick goggles that seal your eyes
 
-  - name: Respirator
+  - name: respirator
     attr: protect_lungs
     text: a face-mask that can filter the air
 
-  - name: Trash Bags
+  - name: trash bags
     attr: protect_torso
     text: a thick bag that could cover your body
 
-  - name: Bleach
+  - name: bleach
     attr: destroy_mold
     text: a toxic liquid known for removing mold
 
-  - name: Plastic Scraper
+  - name: plastic scraper
     attr: destroy_mold
     text: a flexible tool for scraping surfaces clean
 
-  - name: Garage Key
+  - name: garage key
     attr: unlock_garage
     text: a key that goes to the garage door
 
-  - name: Basement Key
+  - name: basement key
     attr: unlock_basement
     text: a key that goes to the basement door
 
 rooms:
-  - name: Downstairs Bathroom
+  - name: downstairs bathroom
     connections:
-      east: Dining Room
-      south: Kitchen
+      east: dining room
+      south: kitchen
     items:
       - Cleaning Gloves
     text: the downstairs bathroom
 
-  - name: Dining Room
+  - name: dining room
     connections:
-      west: Downstairs Bathroom
-      south: Downstairs Hallway
+      west: downstairs bathroom
+      south: downstairs hallway
     text: the dining room
 
-  - name: Kitchen
+  - name: kitchen
     connections:
-      north: Downstairs Bathroom
-      east: Downstairs Hallway
+      north: downstairs bathroom
+      east: downstairs hallway
     items:
       - Trash Bags
     text: the kitchen
 
-  - name: Downstairs Hallway
+  - name: downstairs hallway
     connections:
-      north: Dining Room
-      east: Stairwell First Floor
-      west: Kitchen
-      south: Coatroom
+      north: dining room
+      east: stairwell first floor
+      west: kitchen
+      south: coatroom
     text: the downstairs hallway
 
-  - name: Coatroom
+  - name: coatroom
     connections:
-      north: Downstairs Hallway
-      east: Garage
+      north: downstairs hallway
+      east: garage
     items:
       - Garage Key
     text: the coatroom
 
-  - name: Garage
+  - name: garage
     connections:
-      north: Stairwell Basement
-      west: Coatroom
+      north: stairwell basement
+      west: coatroom
     items:
       - Plastic Scraper
     text: the garage
     locked: True
 
-  - name: Basement
+  - name: basement
     connections:
-      south: Stairwell Basement
+      south: stairwell basement
     text: the basement
     locked: True
     villian: True
 
-  - name: Master Bathroom
+  - name: master bathroom
     connections:
-      west: Parents Room
+      west: parents room
     items:
       - Bleach
     text: your parent's bathroom (ew)
 
-  - name: Parents Room
+  - name: parents room
     connections:
-      east: Master Bathroom
-      west: Storage Room
+      east: master bathroom
+      west: storage room
     items:
       - Basement Key
     text: your parent's room (you shouldn't stay long)
 
-  - name: Storage Room
+  - name: storage room
     connections:
-      east: Parents Room
+      east: parents room
     items:
       - Respirator
     text: your parent's closet (are you sure you want to look here?)
 
-  - name: Sisters Room
+  - name: sisters room
     connections:
-      south: Upstairs Hallway
+      south: upstairs hallway
     items:
       - Swimming Goggles
     text: your sister's room (don't look too closely)
 
-  - name: Your Room
+  - name: your room
     connections:
-      east: Upstairs Hallway
+      east: upstairs hallway
     text: your room, home sweet home
     start: True
 
-  - name: Upstairs Hallway
+  - name: upstairs hallway
     connections:
-      north: Sisters Room
-      east: Stairwell Second Floor
-      south: Parents Room
-      west: Your Room
+      north: sisters room
+      east: stairwell second floor
+      south: parents room
+      west: your room
     text: the upstairs hallway
 
-  - name: Stairwell Basement
+  - name: stairwell basement
     connections:
-      up: Stairwell First Floor
-      north: Basement
-      south: Garage
+      up: stairwell first floor
+      north: basement
+      south: garage
     text: the basement stairwell
     stairwell: True
 
-  - name: Stairwell First Floor
+  - name: stairwell first floor
     connections:
-      up: Stairwell Second Floor
-      down: Stairwell Basement
-      west: Downstairs Hallway
+      up: stairwell second floor
+      down: stairwell basement
+      west: downstairs hallway
     text: the first floor stairwell
     stairwell: True
 
-  - name: Stairwell Second Floor
+  - name: stairwell second floor
     connections:
-      down: Stairwell First Floor
-      west: Upstairs Hallway
+      down: stairwell first floor
+      west: upstairs hallway
     text: the second floor stairwell
     stairwell: True
 """)
