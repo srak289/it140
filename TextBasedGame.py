@@ -335,15 +335,24 @@ class Room(Base):
 
 
     def display(self):
-        """Print directional information for the player
-        'you are in <a room> and you see <attribute of room>'
+        """Print information for the player
+        'you are in <room> and you see <attribute of room>'
         e.g. 'You see the X room to the <direction>' or
         'You see a <item> on the floor.
         """
         s = f"You are in {self.text}.\n"
-        # s += self.text if "(" not in self.text else self.text[:self.text.index("(")-1]
-        s += f"You see {len(self.connections)} "
-        s += "doorway.\n" if len(self.connections) == 1 else "doorways.\n"
+        if hasattr(self, "up"):
+            s += "You see stairs leading to the floor above.\n"
+        if hasattr(self, "down"):
+            s += "You see stairs leading to the floor below.\n"
+        if hasattr(self, "north"):
+            s += "You see a doorway to the north.\n"
+        if hasattr(self, "east"):
+            s += "You see a doorway to the east.\n"
+        if hasattr(self, "south"):
+            s += "You see a doorway to the south.\n"
+        if hasattr(self, "west"):
+            s += "You see a doorway to the west.\n"
 
         if len(self.items) > 0:
             for k, v in self.items.items():
