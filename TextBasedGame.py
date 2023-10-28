@@ -15,42 +15,48 @@ items:
   - name: cleaning gloves
     attr: protect_hands
     text: heavy gloves that cover your hands
+    room: downstairs bathroom
 
   - name: swimming goggles
     attr: protect_eyes
     text: thick goggles that seal your eyes
+    room: sisters bedroom
 
   - name: respirator
     attr: protect_lungs
     text: a face-mask that can filter the air
+    room: storage room
 
   - name: trash bags
     attr: protect_torso
     text: a thick bag that could cover your body
+    room: kitchen
 
   - name: bleach
     attr: destroy_mold
     text: a toxic liquid known for removing mold
+    room: master bathroom
 
   - name: plastic scraper
     attr: destroy_mold
     text: a flexible tool for scraping surfaces clean
+    room: garage
 
   - name: garage key
     attr: unlock_garage
     text: a key that goes to the garage door
+    room: coatroom
 
   - name: basement key
     attr: unlock_basement
     text: a key that goes to the basement door
+    room: parents bedroom
 
 rooms:
   - name: downstairs bathroom
     connections:
       east: dining room
       south: kitchen
-    items:
-      - Cleaning Gloves
     text: the downstairs bathroom
 
   - name: dining room
@@ -63,8 +69,6 @@ rooms:
     connections:
       north: downstairs bathroom
       east: downstairs hallway
-    items:
-      - Trash Bags
     text: the kitchen
 
   - name: downstairs hallway
@@ -79,16 +83,12 @@ rooms:
     connections:
       north: downstairs hallway
       east: garage
-    items:
-      - Garage Key
     text: the coatroom
 
   - name: garage
     connections:
       north: stairwell basement
       west: coatroom
-    items:
-      - Plastic Scraper
     text: the garage
     locked: True
 
@@ -102,30 +102,22 @@ rooms:
   - name: master bathroom
     connections:
       west: parents room
-    items:
-      - Bleach
     text: your parent's bathroom (ew)
 
   - name: parents room
     connections:
       east: master bathroom
       west: storage room
-    items:
-      - Basement Key
     text: your parent's room (you shouldn't stay long)
 
   - name: storage room
     connections:
       east: parents room
-    items:
-      - Respirator
     text: your parent's closet (are you sure you want to look here?)
 
   - name: sisters room
     connections:
       south: upstairs hallway
-    items:
-      - Swimming Goggles
     text: your sister's room (don't look too closely)
 
   - name: your room
@@ -207,6 +199,7 @@ class Item(Base):
     """An object for representing item pickups
     """
     attr: str
+    room: str
 
 
 class Command:
@@ -242,7 +235,7 @@ class Room(Base):
     """An object for representing a room in the game
     """
     connections: typing.Dict[str, 'Room']
-    items: typing.List[Item] = dataclasses.field(default_factory = lambda: list())
+    items: typing.Dict[str, Item] = dataclasses.field(default_factory = lambda: dict())
     start: bool = False
     locked: bool = False
     villian: bool = False
@@ -267,7 +260,26 @@ class Room(Base):
         self._connections[direction] = room
 
 
-    def move(self, direction):
+    def get(self, item: str) -> Item:
+        """Return an item from the room to the player
+        Args:
+            s: The name of the item
+        Raises:
+            CannotGetItemError if the item is not in the room
+        """
+        if item not in self.items:
+            raise CannotGetItemError(f"There is no {item} in {self.name}")
+        return self.items.pop(item)
+
+
+    def move(self, direction: str) -> 'Room':
+        """Move the player in 'direction'
+        Args:
+            direction: The string name of the direction to move
+        Raises:
+            NoRoomAdjacentError
+            LockedRoomError
+        """
         if direction not in self._valid_directions:
             raise InvalidDirectionError(f"{direction} is not one of {self._valid_directions}")
         try:
