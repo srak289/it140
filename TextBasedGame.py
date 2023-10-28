@@ -397,7 +397,7 @@ class Map:
         """
         if s in self._items:
             return self._items[s]
-        raise NoSuchItemError(s)
+        raise NoSuchItemError(f"There is no such item '{s}'")
 
 
     def get_room(self, s: str) -> Room:
@@ -497,9 +497,11 @@ def main():
             continue
         try:
             player.command(cmd)
-        except InvalidDirectionError as e:
-            e.display()
-        except CannotGetItemError as e:
+        except (
+            InvalidDirectionError,
+            CannotGetItemError,
+            NoSuchItemError,
+        ) as e:
             e.display()
         except QuitGameError as e:
             GAME_RUN = False
