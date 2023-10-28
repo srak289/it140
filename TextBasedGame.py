@@ -183,11 +183,16 @@ class NoSuchItemError(TextBasedGameError): pass
 
 @dataclasses.dataclass
 class Base:
+    """A base class for other object types to inherit from
+    Args:
+        name: The object's name
+        text: The text to display for the object in-game
+    """
     name: str
     text: str
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    def from_dict(cls, **kwargs) -> 'Base':
         return cls(**kwargs)
 
 
@@ -216,17 +221,34 @@ class Command:
 
 
     @classmethod
-    def parse(cls, raw_cmd):
+    def parse(cls, raw_cmd: str) -> 'Command':
+        """Parse a raw string and return an instance of :class:Command
+        Args:
+            raw_cmd: The string to parse, usually user input
+        Raises:
+            InvalidCommandError
+        """
         raw_cmd = raw_cmd.lower().split()
-        if raw_cmd[0] not in cls._valid_cmd:
+        if len(raw_cmd) == 0:
+            raise InvalidCommandError(f"You must enter one of {cls._valid_cmd}!")
+        elif raw_cmd[0] not in cls._valid_cmd:
             raise InvalidCommandError(f"{raw_cmd} is not one of {cls._valid_cmd}")
         elif raw_cmd[0] == "go":
+            # valid use of the go command is `go <valid-direction>`
+            # valid direction is up to the current room as stairwells
+            # also allow you to move up and down
             return cls(raw_cmd[0], direction=raw_cmd[1])
-        elif raw_cmd[0] == "get":
-            return cls(raw_cmd[0], item=" ".join(raw_cmd[1:]))
-        elif raw_cmd[0] == "exit":
+        elif raw_cmd[0] == "inspect":
+            # valid use of the inspect command is `inspect <room|item <item-name>>`
+            # this feature allows the player to "see" things in their environment
+            # TODO
             return cls(raw_cmd[0])
+        elif raw_cmd[0] == "get":
+            # valid use of the get command is `get <item>`
+            # whether you can get the item is up to the current room
+            return cls(raw_cmd[0], item=" ".join(raw_cmd[1:]))
         elif raw_cmd[0] == "quit":
+            # valid use of the get command is `quit`
             return cls(raw_cmd[0])
         assert False,"Failed parsing command!"
 
@@ -242,20 +264,23 @@ class Room(Base):
     villian: bool = False
     stairwell: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._valid_directions = set({"north", "east", "south", "west"})
         if self.stairwell:
+            # if we are a stairwell then valid directions include "up" and "down"
             self._valid_directions |= {"up", "down"}
 
 
-    def _add_item(self, item: Item):
+    def _add_item(self, item: Item) -> None:
         """Add an item to the room
         """
         self.items[item.name] = item
 
 
-    def _add_adjacent_room(self, direction: str, room: 'Room'):
-        """Create a unidirectional edge between this room and another
+    def _add_adjacent_room(self, direction: str, room: 'Room') -> None:
+        """Create a unidirectional edge between `self` and `room`
+        Args:
+            room: The room to create an edge to
         """
         assert direction in self._valid_directions,f"{direction} is invalid"
         self.connections[direction] = room
@@ -291,7 +316,8 @@ class Room(Base):
             raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
 
 
-    def move_with_key(self, inventory,  direction):
+    def move_with_key(self, inventory,  direction) -> None:
+        # this might want to decorate....
         for i in inventory:
             if i.name == f"{self.name}_key":
                 self.locked = False
@@ -403,12 +429,16 @@ class Player:
             except CannotGetItemError as e:
                 raise
 
+        elif c.cmd == "inspect":
+            self.room.inspect()
+
         elif c.cmd == "quit":
             raise QuitGameError("QUIT")
 
 
     def display_inventory(self):
-        print(f"Inventory: {self.inventory}")
+        s = ', '.join([x.name for x in self.inventory])
+        print(f"\nInventory: [{s}]\n")
 
 
 def main():
@@ -426,11 +456,13 @@ def main():
     player = Player(game_map, game_map.get_room("your room"))
 
     while GAME_RUN:
+        print("-"*30)
         player.room.display()
         player.display_inventory()
 
         try:
             cmd = Command.parse(input("Enter your command:\n"))
+            print()
         except InvalidCommandError as e:
             e.display()
             continue
