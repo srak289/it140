@@ -20,7 +20,7 @@ items:
   - name: swimming goggles
     attr: protect_eyes
     text: thick goggles that seal your eyes
-    room: sisters bedroom
+    room: sisters room
 
   - name: respirator
     attr: protect_lungs
@@ -50,7 +50,7 @@ items:
   - name: basement key
     attr: unlock_basement
     text: a key that goes to the basement door
-    room: parents bedroom
+    room: parents room
 
 rooms:
   - name: downstairs bathroom
@@ -106,6 +106,7 @@ rooms:
 
   - name: parents room
     connections:
+      north: upstairs hallway
       east: master bathroom
       west: storage room
     text: your parent's room (you shouldn't stay long)
@@ -250,14 +251,14 @@ class Room(Base):
     def _add_item(self, item: Item):
         """Add an item to the room
         """
-        self._items.append(item)
+        self.items[item.name] = item
 
 
     def _add_adjacent_room(self, direction: str, room: 'Room'):
         """Create a unidirectional edge between this room and another
         """
         assert direction in self._valid_directions,f"{direction} is invalid"
-        self._connections[direction] = room
+        self.connections[direction] = room
 
 
     def get(self, item: str) -> Item:
@@ -338,7 +339,7 @@ class Map:
         """
         if s in self._items:
             return self._items[s]
-        raise NoSuchItemError(i)
+        raise NoSuchItemError(s)
 
 
     def get_room(self, s: str) -> Room:
