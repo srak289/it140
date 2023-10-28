@@ -211,7 +211,7 @@ class Item(Base):
 class Command:
     """An object for representing valid commands
     """
-    _valid_cmd = set({"inspect", "go", "get", "quit"})
+    _valid_cmd = set({"go", "get", "quit"})
 
     def __init__(self, cmd: str, **kwargs):
         self.cmd = cmd
@@ -238,11 +238,6 @@ class Command:
             # valid direction is up to the current room as stairwells
             # also allow you to move up and down
             return cls(raw_cmd[0], direction=raw_cmd[1])
-        elif raw_cmd[0] == "inspect":
-            # valid use of the inspect command is `inspect <room|item <item-name>>`
-            # this feature allows the player to "see" things in their environment
-            # TODO
-            return cls(raw_cmd[0])
         elif raw_cmd[0] == "get":
             # valid use of the get command is `get <item>`
             # whether you can get the item is up to the current room
@@ -325,7 +320,7 @@ class Room(Base):
         return self.move(direction)
 
 
-    def inspect(self):
+    def display(self):
         """Print directional information for the player
         'you are in <a room> and you see <attribute of room>'
         e.g. 'You see the X room to the <direction>' or
@@ -468,7 +463,7 @@ def main():
 
     while GAME_RUN:
         print("-"*30)
-        player.room.inspect()
+        player.room.display()
         player.display_inventory()
 
         try:
