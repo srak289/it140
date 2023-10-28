@@ -355,8 +355,8 @@ class Map:
 
 @dataclasses.dataclass
 class Player:
+    room_map: Map
     room: Room = None
-    room_map: Map = None
     inventory: typing.List[Item] = dataclasses.field(default_factory=lambda: list())
 
     def command(self, c: Command):
@@ -390,6 +390,10 @@ class Player:
         elif c.cmd == "get":
             assert hasattr(c, "item"),f"Command {c} did not specify an item!"
             try:
+                _ = self.room_map.get_item(c.item)
+            except NoSuchItemError as e:
+                raise
+            try:
                 self.inventory.append(self.room.get(c.item))
             except CannotGetItemError as e:
                 raise
@@ -414,7 +418,7 @@ def main():
     GAME_RUN = True
 
     game_map = Map(MAPDATA)
-    player = Player(game_map.get_room("Your Room"))
+    player = Player(game_map, game_map.get_room("Your Room"))
 
     while GAME_RUN:
         player.room.display()
