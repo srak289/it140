@@ -418,7 +418,7 @@ def main():
     GAME_RUN = True
 
     game_map = Map(MAPDATA)
-    player = Player(game_map, game_map.get_room("Your Room"))
+    player = Player(game_map, game_map.get_room("your room"))
 
     while GAME_RUN:
         player.room.display()
