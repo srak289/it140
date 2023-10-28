@@ -237,10 +237,14 @@ class Command:
             # valid use of the go command is `go <valid-direction>`
             # valid direction is up to the current room as stairwells
             # also allow you to move up and down
+            if len(raw_cmd) < 2:
+                raise InvalidCommandError(f"'go' command requires argument <direction>")
             return cls(raw_cmd[0], direction=raw_cmd[1])
         elif raw_cmd[0] == "get":
             # valid use of the get command is `get <item>`
             # whether you can get the item is up to the current room
+            if len(raw_cmd) < 2:
+                raise InvalidCommandError(f"'get' command requires argument <item>")
             return cls(raw_cmd[0], item=" ".join(raw_cmd[1:]))
         elif raw_cmd[0] == "quit":
             # valid use of the get command is `quit`
