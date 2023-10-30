@@ -162,8 +162,10 @@ rooms:
 
 class TextBasedGameError(Exception):
 
-    def __init__(self, msg):
+    def __init__(self, msg, **kwargs):
         self.msg = msg
+        for k, v in kwargs.items():
+            setattr(self, k, v)
         super().__init__(msg)
 
 
@@ -310,12 +312,12 @@ class Room(Base):
         try:
             # we need to check if the target room is locked, not if we are locked
             target = getattr(self, direction)
-            if keys:
+            if keys and target.locked:
                 for k in keys:
                     if k.attr == f"unlock_{target.name}":
                         target.locked = False
             if target.locked:
-                raise LockedRoomError(f"The {target.text} is locked")
+                raise LockedRoomError(f"The {target.text} is locked", room=target)
             return target
         except AttributeError as e:
             raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
@@ -329,6 +331,7 @@ class Room(Base):
         elif "," in self.text:
             # assumes there is no <space> before the ','
             return self.text[:self.text.index(",")]
+        return self.text
 
 
     def display(self):
@@ -419,30 +422,21 @@ class Player:
         if c.cmd == "go":
             try:
                 assert hasattr(c, "direction"),f"Command {c} did not specify a direction!"
-                # unsure if we should use internal errors for this
-                # or if we should let the map handle adjacent room movements
-                # I think it might make sense for the player to just track the room its in
-                # and accept errors from the Room object
-                # e.g. 'get item' -> Room raises 'no  such item'
-                # or 'go west' -> Room raises 'cannot go west'
-                # This almost invalidates the existence of the map
-                # as the rooms are effectively a node graph with edges to each other
                 try:
                     self.room = self.room.move(c.direction)
                 except NoRoomAdjacentError as e:
                     e.display()
                 except LockedRoomError as e:
-                    e.display()
+                    print(f"It appears that {e.room.text} is locked.")
                     try:
                         keys = []
                         for i in self.inventory:
                             if i.name.endswith(" key"):
                                 keys.append(i)
                         self.room = self.room.move(c.direction, keys)
-                        print(f"You unlock the room with theenter the room with the  key")
+                        print(f"You unlock {e.room.text} and proceed through the door.")
                     except LockedRoomError as e:
                         print(f"You do not appear to have the key.")
-                        # e.display()
             except InvalidDirectionError as e:
                 raise
 
@@ -466,7 +460,7 @@ class Player:
 
     def display_inventory(self):
         s = ', '.join([x.name for x in self.inventory])
-        print(f"\nInventory: [{s}]\n")
+        print(f"Inventory: [{s}]\n")
 
 
 def main():
@@ -508,5 +502,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print(f"Starting game...\n")
+    print(f"<SOME INTRO TEXT TO THE GAME>")
     main()
