@@ -297,7 +297,7 @@ class Room(Base):
         return self.items.pop(item)
 
 
-    def move(self, direction: str) -> 'Room':
+    def move(self, direction: str, keys: list = None) -> 'Room':
         """Move the player in 'direction'
         Args:
             direction: The string name of the direction to move
@@ -308,20 +308,17 @@ class Room(Base):
         if direction not in self._valid_directions:
             raise InvalidDirectionError(f"{direction} is not one of {self._valid_directions}")
         try:
-            if self.locked:
-                raise LockedRoomError(self)
-            return getattr(self, direction)
+            # we need to check if the target room is locked, not if we are locked
+            target = getattr(self, direction)
+            if keys:
+                for k in keys:
+                    if k.attr == f"unlock_{target.name}":
+                        target.locked = False
+            if target.locked:
+                raise LockedRoomError(f"The {target.text} is locked")
+            return target
         except AttributeError as e:
             raise NoRoomAdjacentError(f"There is no room in the {direction} direction")
-
-
-    def move_with_key(self, inventory,  direction) -> None:
-        # this might want to decorate....
-        for i in inventory:
-            if i.name == f"{self.name}_key":
-                self.locked = False
-        # let this raise
-        return self.move(direction)
 
 
     @property
@@ -437,13 +434,15 @@ class Player:
                 except LockedRoomError as e:
                     e.display()
                     try:
-                        # TODO Still have to look at lock mechanism
-                        self.room = self.room.move_with_key(inventory, c.direction)
+                        keys = []
+                        for i in self.inventory:
+                            if i.name.endswith(" key"):
+                                keys.append(i)
+                        self.room = self.room.move(c.direction, keys)
                         print(f"You unlock the room with theenter the room with the  key")
                     except LockedRoomError as e:
-                        e.display()
-
-
+                        print(f"You do not appear to have the key.")
+                        # e.display()
             except InvalidDirectionError as e:
                 raise
 
