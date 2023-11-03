@@ -3,6 +3,9 @@
 #
 # Assignment 7-3
 # Project Two
+#
+# Note the use of `assert` statements to denote internal failures that *MUST NOT* occur
+# The use of `raise` to signal internal errors is for communication between objects
 
 import dataclasses
 # Use typing to conform to standards prior to 3.11
@@ -161,6 +164,11 @@ rooms:
 
 
 class TextBasedGameError(Exception):
+    """A base class for internal game error handling
+    Args:
+        msg: The text to display
+        **kwargs: Extra key=value attributes to add to the raised error
+    """
 
     def __init__(self, msg, **kwargs):
         self.msg = msg
@@ -205,6 +213,9 @@ class Base:
 @dataclasses.dataclass
 class Item(Base):
     """An object for representing item pickups
+    Args:
+        attr: The attribute of the item
+        room: The room the item should be placed in
     """
     attr: str
     room: str
@@ -257,6 +268,13 @@ class Command:
 @dataclasses.dataclass
 class Room(Base):
     """An object for representing a room in the game
+    Args:
+        connections: A dict of {:str:, :class:Room}
+        items: A list of :class:Item
+        start: If the player starts here
+        locked: If the room is locked
+        villian: If there is a villian in the room
+        stairwell: If the room is a stairwell
     """
     connections: typing.Dict[str, 'Room']
     items: typing.Dict[str, Item] = dataclasses.field(default_factory = lambda: dict())
@@ -324,7 +342,9 @@ class Room(Base):
 
 
     @property
-    def short_text(self):
+    def short_text(self) -> str:
+        """:class:Room.text without additional information
+        """
         if "(" in self.text:
             # assumes there is a <space> before the '('
             return self.text[:self.text.index("(")-1]
@@ -332,6 +352,25 @@ class Room(Base):
             # assumes there is no <space> before the ','
             return self.text[:self.text.index(",")]
         return self.text
+
+
+    def fight(self, inventory: list) -> None:
+        if not self.villian:
+            return
+        else:
+            print("PREPARE TO FIGHT!")
+            # construct a dictionary of items without including keys
+            pinv = {i.name: i for i in inventory if not i.name.endswith(" key")}
+            for k, v in pinv.items():
+                print(f"You are bringing {v.name}: {v.text} to the fight!")
+
+            # upon entering the mold room the mold should consume each item with an effect
+            # each item will couter the effect unless the player has failed to collect the
+            # item that would couter said effect.
+            # this will present different scenarios of loss to the player
+            # e.g. "the mold has entered your eyes because you forgot goggles"
+            # or "The mold has slowly suffocated you because you forgot your respirator"
+            # except that it should be way more visceral
 
 
     def display(self):
@@ -464,16 +503,9 @@ class Player:
 
 
 def main():
-    # upon entering the mold room the mold should consume each item with an effect
-    # each item will couter the effect unless the player has failed to collect the
-    # item that would couter said effect.
-    # this will present different scenarios of loss to the player
-    # e.g. "the mold has entered your eyes because you forgot goggles"
-    # or "The mold has slowly suffocated you because you forgot your respirator"
-    # except that it should be way more visceral
-
     GAME_RUN = True
 
+    # We initialize the Map and create a Player
     game_map = Map(MAPDATA)
     player = Player(game_map, game_map.get_room("your room"))
 
@@ -481,6 +513,7 @@ def main():
         print("-"*30)
         player.room.display()
         player.display_inventory()
+        player.room.fight(player.inventory)
 
         try:
             cmd = Command.parse(input("Enter your command:\n"))
