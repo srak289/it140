@@ -552,6 +552,8 @@ class Player:
 def main():
     GAME_RUN = True
 
+    print("You wake up at noon like usual and decide today is the day you move to the basement.\nYour parents and sister are sick of you staying up until 3am playing video games\nlike the responsible 27 year old man that you are.\nThe most logical thing for you to do is clean out the basement and\nmove down there to pursue your illustrious video game career.\nFirst you need to gather six items to protect yourself from the mold down there while you are cleaning.\nKnow that if you find any keys they do not count towards the six items you need.\n")
+
     # We initialize the Map and create a Player
     game_map = Map(MAPDATA)
     player = Player(game_map, game_map.get_room("your room"))
@@ -588,5 +590,4 @@ def main():
 
 
 if __name__ == "__main__":
-    print(f"<SOME INTRO TEXT TO THE GAME>")
     main()
