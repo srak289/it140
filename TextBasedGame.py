@@ -355,22 +355,69 @@ class Room(Base):
 
 
     def fight(self, inventory: list) -> None:
+        """Run the fight sequence if self.villian is True
+        """
         if not self.villian:
             return
         else:
-            print("PREPARE TO FIGHT!")
             # construct a dictionary of items without including keys
-            pinv = {i.name: i for i in inventory if not i.name.endswith(" key")}
-            for k, v in pinv.items():
-                print(f"You are bringing {v.name}: {v.text} to the fight!")
+            pinv = [i.name for i in inventory if not i.name.endswith(" key")]
 
-            # upon entering the mold room the mold should consume each item with an effect
-            # each item will couter the effect unless the player has failed to collect the
-            # item that would couter said effect.
-            # this will present different scenarios of loss to the player
-            # e.g. "the mold has entered your eyes because you forgot goggles"
-            # or "The mold has slowly suffocated you because you forgot your respirator"
-            # except that it should be way more visceral
+            text = "You enter the basement and see the mold.\n"
+            win = True
+            injured = False
+
+            if "plastic scraper" in pinv:
+                text += "You scrape at the mold with your plastic scraper.\n"
+            else:
+                text += "You claw at the mold with your hands but fail to remove most of it.\n"
+                win = False
+
+            if "cleaning gloves" in pinv:
+                text += "Your cleaning gloves prevent the mold from touching your skin.\n"
+            else:
+                text += "The mold builds up beneath your fingernails and stains your hands.\n"
+                win = False
+                injured = True
+
+            if "swimming goggles" in pinv:
+                text += "You can see clearly as you clean because of your sister's goggles.\n"
+            else:
+                text += "The mold begins to build up in your eyes and your vision blurs.\n"
+                win = False
+                injured = True
+
+            if "respirator" in pinv:
+                text += "Your respirator prevents the mold spores from entering your lungs.\n"
+            else:
+                text += "You begin to cough as the mold spores build up in your lungs.\n"
+                win = False
+                injured = True
+
+            if "trash bags" in pinv:
+                text += "The mold does not stick to the trash bags you wear like a poncho.\n"
+            else:
+                text += "The mold stains your clothing and your skin.\n"
+                win = False
+                injured = True
+
+            if "bleach" in pinv:
+                text += "You spray bleach on the moldy surfaces.\n"
+            else:
+                text += "You hope the mold will not return.\n"
+                win = False
+
+            print(text)
+
+            if win:
+                print("Your collection of items protected you from the dangers of the mold!\nYou even bleached the mold after you cleaned and it shall never return!\nYou should be able to move into the basement soon enough after it airs out!\nCongratulations, YOU WON!\n")
+            else:
+                if injured:
+                    print("You succumb to the mold after a long day cleaning in the basement.\nInitially you felt fine but mold is a slow killer and you forgot some life-saving protective equipment.\nBetter luck next time...\n")
+                else:
+                    print("You wait several days for the dust to settle and check back on the basement.\nUnfortunately you did not bleach the walls and the mold has returned stronger than before.\nBetter luck next time...\n")
+
+            raise QuitGameError("QUIT")
 
 
     def display(self):
@@ -513,7 +560,12 @@ def main():
         print("-"*30)
         player.room.display()
         player.display_inventory()
-        player.room.fight(player.inventory)
+        try:
+            player.room.fight(player.inventory)
+        except QuitGameError:
+            GAME_RUN = False
+            print("Thanks for playing!")
+            break
 
         try:
             cmd = Command.parse(input("Enter your command:\n"))
@@ -532,6 +584,7 @@ def main():
         except QuitGameError as e:
             GAME_RUN = False
             print("Thanks for playing!")
+            break
 
 
 if __name__ == "__main__":
